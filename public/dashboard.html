@@ -5,6 +5,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>毛豆数据面板</title>
   <style>
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+    }
+    
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0px);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+    
+    @keyframes rainbow {
+      0% { color: #FF6B6B; }
+      25% { color: #4ECDC4; }
+      50% { color: #FFE66D; }
+      75% { color: #95E1D3; }
+      100% { color: #FF6B6B; }
+    }
+    
     * {
       margin: 0;
       padding: 0;
@@ -16,6 +53,7 @@
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       min-height: 100vh;
       padding: 20px;
+      overflow-x: hidden;
     }
     
     .container {
@@ -27,11 +65,13 @@
       text-align: center;
       color: white;
       margin-bottom: 30px;
+      animation: slideIn 0.6s ease-out;
     }
     
     .header h1 {
-      font-size: 32px;
+      font-size: 36px;
       margin-bottom: 10px;
+      animation: float 3s ease-in-out infinite;
     }
     
     .header p {
@@ -41,51 +81,78 @@
     
     .score-card {
       background: white;
-      border-radius: 20px;
-      padding: 30px;
+      border-radius: 25px;
+      padding: 35px;
       margin-bottom: 20px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
       text-align: center;
+      animation: slideIn 0.6s ease-out 0.1s both;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .score-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+      animation: float 6s ease-in-out infinite;
     }
     
     .score-display {
-      font-size: 60px;
+      font-size: 72px;
       font-weight: bold;
-      color: #667eea;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
       margin-bottom: 10px;
+      animation: pulse 2s ease-in-out infinite;
+      position: relative;
+      z-index: 1;
     }
     
     .score-label {
-      font-size: 14px;
+      font-size: 16px;
       color: #999;
       margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
     }
     
     .reward-info {
-      background: #f5f5f5;
-      border-radius: 10px;
-      padding: 15px;
-      margin-bottom: 20px;
-      font-size: 13px;
-      color: #666;
+      background: linear-gradient(135deg, #FFE66D 0%, #95E1D3 100%);
+      border-radius: 15px;
+      padding: 18px;
+      font-size: 14px;
+      color: #333;
+      font-weight: 600;
+      position: relative;
+      z-index: 1;
+      box-shadow: 0 8px 20px rgba(255, 230, 109, 0.3);
     }
     
     .reward-info strong {
       color: #667eea;
+      font-size: 16px;
     }
     
     .trend-section {
       background: white;
-      border-radius: 20px;
-      padding: 20px;
+      border-radius: 25px;
+      padding: 25px;
       margin-bottom: 20px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+      animation: slideIn 0.6s ease-out 0.2s both;
     }
     
     .trend-title {
-      font-size: 16px;
+      font-size: 18px;
       font-weight: bold;
-      margin-bottom: 15px;
+      margin-bottom: 20px;
       color: #333;
     }
     
@@ -93,63 +160,120 @@
       display: flex;
       align-items: flex-end;
       justify-content: space-around;
-      height: 150px;
-      gap: 8px;
+      height: 180px;
+      gap: 10px;
+      margin-bottom: 20px;
     }
     
     .trend-bar {
       flex: 1;
-      background: #667eea;
-      border-radius: 8px 8px 0 0;
+      background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+      border-radius: 12px 12px 0 0;
       position: relative;
-      min-height: 10px;
+      min-height: 15px;
       transition: all 0.3s;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      animation: slideIn 0.6s ease-out backwards;
     }
     
+    .trend-bar:nth-child(1) { animation-delay: 0.3s; }
+    .trend-bar:nth-child(2) { animation-delay: 0.35s; }
+    .trend-bar:nth-child(3) { animation-delay: 0.4s; }
+    .trend-bar:nth-child(4) { animation-delay: 0.45s; }
+    .trend-bar:nth-child(5) { animation-delay: 0.5s; }
+    .trend-bar:nth-child(6) { animation-delay: 0.55s; }
+    .trend-bar:nth-child(7) { animation-delay: 0.6s; }
+    
     .trend-bar:hover {
-      background: #764ba2;
+      transform: scaleY(1.1);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.5);
     }
     
     .trend-label {
       position: absolute;
-      bottom: -25px;
+      bottom: -28px;
       left: 50%;
       transform: translateX(-50%);
-      font-size: 11px;
+      font-size: 12px;
       color: #999;
       white-space: nowrap;
+      font-weight: 600;
     }
     
     .trend-value {
       position: absolute;
-      top: -25px;
+      top: -28px;
       left: 50%;
       transform: translateX(-50%);
-      font-size: 12px;
+      font-size: 13px;
       font-weight: bold;
-      color: #667eea;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-top: 20px;
+    }
+    
+    .stat-card {
+      background: linear-gradient(135deg, #FF6B6B 0%, #FFE66D 100%);
+      border-radius: 15px;
+      padding: 20px;
+      text-align: center;
+      color: white;
+      font-weight: 600;
+      box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
+      animation: slideIn 0.6s ease-out 0.3s both;
+    }
+    
+    .stat-card:nth-child(2) {
+      background: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%);
+      box-shadow: 0 8px 20px rgba(78, 205, 196, 0.3);
+      animation-delay: 0.35s;
+    }
+    
+    .stat-number {
+      font-size: 28px;
+      margin-bottom: 5px;
+    }
+    
+    .stat-label {
+      font-size: 12px;
+      opacity: 0.9;
     }
     
     .footer {
       text-align: center;
       color: white;
-      font-size: 12px;
+      font-size: 13px;
       margin-top: 30px;
+      animation: slideIn 0.6s ease-out 0.4s both;
     }
     
     .link {
       color: white;
       text-decoration: underline;
       cursor: pointer;
+      font-weight: 600;
     }
     
     @media (max-width: 480px) {
       .score-display {
-        font-size: 48px;
+        font-size: 56px;
       }
       
-      .trend-section {
-        padding: 15px;
+      .trend-chart {
+        height: 140px;
+      }
+      
+      .header h1 {
+        font-size: 28px;
       }
     }
   </style>
@@ -172,6 +296,16 @@
     <div class="trend-section">
       <div class="trend-title">📈 7天趋势</div>
       <div class="trend-chart" id="trendChart"></div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-number" id="avgScore">0</div>
+          <div class="stat-label">平均分</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="maxScore">0</div>
+          <div class="stat-label">最高分</div>
+        </div>
+      </div>
     </div>
     
     <div class="footer">
@@ -224,7 +358,14 @@
         const chart = document.getElementById('trendChart');
         chart.innerHTML = '';
         
-        const maxScore = Math.max(...trend.map(t => t.score), 100);
+        const scores = trend.map(t => t.score);
+        const maxScore = Math.max(...scores, 100);
+        const avgScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+        const maxScoreValue = Math.max(...scores);
+        
+        // 更新统计
+        document.getElementById('avgScore').textContent = avgScore;
+        document.getElementById('maxScore').textContent = maxScoreValue;
         
         trend.forEach((item, index) => {
           const height = (item.score / maxScore) * 100;
