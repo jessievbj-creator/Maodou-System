@@ -485,23 +485,34 @@ const server = http.createServer((req, res) => {
   
   // 移除查询字符串
   filePath = filePath.split('?')[0];
-  filePath = path.join(__dirname, 'public', filePath);
   
-  // 如果是目录，尝试加 .html
-  if (!filePath.endsWith('.html') && !filePath.includes('.')) {
-    filePath = filePath + '.html';
-  }
+  // 尝试读取文件
+  const fullPath = path.join(__dirname, 'public', filePath);
   
-  fs.readFile(filePath, (err, data) => {
+  fs.readFile(fullPath, (err, data) => {
     if (err) {
-      res.writeHead(404, { 'Content-Type': 'text/plain' });
-      res.end('404 Not Found');
+      // 如果文件不存在，尝试加 .html
+      if (!filePath.endsWith('.html')) {
+        const htmlPath = path.join(__dirname, 'public', filePath + '.html');
+        fs.readFile(htmlPath, (err2, data2) => {
+          if (err2) {
+            res.writeHead(404, { 'Content-Type': 'text/plain' });
+            res.end('404 Not Found');
+            return;
+          }
+          res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+          res.end(data2);
+        });
+      } else {
+        res.writeHead(404, { 'Content-Type': 'text/plain' });
+        res.end('404 Not Found');
+      }
       return;
     }
     
-    const ext = path.extname(filePath);
+    const ext = path.extname(fullPath);
     const contentType = {
-      '.html': 'text/html',
+      '.html': 'text/html; charset=utf-8',
       '.css': 'text/css',
       '.js': 'application/javascript',
       '.json': 'application/json'
