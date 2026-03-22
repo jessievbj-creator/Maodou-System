@@ -2,7 +2,6 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const url = require('url');
-const querystring = require('querystring');
 const https = require('https');
 const { generateMaodouReport } = require('./lib/report-generator');
 const { sendMaodouReportToFeishu } = require('./lib/feishu-sender');
@@ -29,6 +28,8 @@ function saveData() {
 
 // 发送飞书消息
 function sendFeishuMessage(message) {
+  const FEISHU_WEBHOOK = 'https://open.feishu.cn/open-apis/bot/v2/hook/7a6925e6-27d3-4e9f-ac52-3d950da9cef6';
+  
   const data = JSON.stringify({
     msg_type: 'text',
     content: {
@@ -478,49 +479,41 @@ const server = http.createServer((req, res) => {
     return;
   }
   
-  // 静态文件
-  let filePath = pathname === '/' ? '/score.html' : pathname;
-  if (pathname === '/score') filePath = '/score.html';
-  if (pathname === '/dashboard') filePath = '/dashboard.html';
-  
-  // 移除查询字符串
-  filePath = filePath.split('?')[0];
-  
-  // 尝试读取文件
-  const fullPath = path.join(__dirname, 'public', filePath);
-  
-  fs.readFile(fullPath, (err, data) => {
-    if (err) {
-      // 如果文件不存在，尝试加 .html
-      if (!filePath.endsWith('.html')) {
-        const htmlPath = path.join(__dirname, 'public', filePath + '.html');
-        fs.readFile(htmlPath, (err2, data2) => {
-          if (err2) {
-            res.writeHead(404, { 'Content-Type': 'text/plain' });
-            res.end('404 Not Found');
-            return;
-          }
-          res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-          res.end(data2);
-        });
-      } else {
+  // 路由：/score 和 /dashboard
+  if (pathname === '/score' || pathname === '/dashboard') {
+    // 读取对应的 HTML 文件
+    const fileName = pathname === '/score' ? 'score.html' : 'dashboard.html';
+    const filePath = path.join(__dirname, 'public', fileName);
+    
+    fs.readFile(filePath, 'utf8', (err, data) => {
+      if (err) {
         res.writeHead(404, { 'Content-Type': 'text/plain' });
         res.end('404 Not Found');
+        return;
       }
-      return;
-    }
-    
-    const ext = path.extname(fullPath);
-    const contentType = {
-      '.html': 'text/html; charset=utf-8',
-      '.css': 'text/css',
-      '.js': 'application/javascript',
-      '.json': 'application/json'
-    }[ext] || 'text/plain';
-    
-    res.writeHead(200, { 'Content-Type': contentType });
-    res.end(data);
-  });
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(data);
+    });
+    return;
+  }
+  
+  // 默认路由
+  if (pathname === '/') {
+    const filePath = path.join(__dirname, 'public', 'score.html');
+    fs.readFile(filePath, 'utf8', (err, data) => {
+      if (err) {
+        res.writeHead(404, { 'Content-Type': 'text/plain' });
+        res.end('404 Not Found');
+        return;
+      }
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(data);
+    });
+    return;
+  }
+  
+  res.writeHead(404, { 'Content-Type': 'text/plain' });
+  res.end('404 Not Found');
 });
 
 loadData();
@@ -528,5 +521,4 @@ loadData();
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
   console.log(`🚀 毛豆积分系统运行在 http://localhost:${PORT}`);
-  console.log(`📱 用浏览器打开上面的地址即可使用`);
 });
