@@ -398,7 +398,7 @@ const server = http.createServer((req, res) => {
   if (pathname === '/api/submit-scores' && req.method === 'POST') {
     let body = '';
     req.on('data', chunk => body += chunk);
-    req.on('end', () => {
+    req.on('end', async () => {
       try {
         const { scores } = JSON.parse(body);
         const { dateStr, dayType } = getTodayInfo();
@@ -425,7 +425,11 @@ const server = http.createServer((req, res) => {
         saveData();
         
         // 发送飞书日报
-        sendMaodouReportToFeishu(report);
+        try {
+          await sendMaodouReportToFeishu(report);
+        } catch (err) {
+          console.error('飞书推送失败:', err);
+        }
         
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ success: true, totalScore, report }));
