@@ -4,9 +4,8 @@ const path = require('path');
 const url = require('url');
 const querystring = require('querystring');
 const https = require('https');
-
-// 飞书 Webhook URL
-const FEISHU_WEBHOOK = 'https://open.feishu.cn/open-apis/bot/v2/hook/7a6925e6-27d3-4e9f-ac52-3d950da9cef6';
+const { generateMaodouReport } = require('./lib/report-generator');
+const { sendMaodouReportToFeishu } = require('./lib/feishu-sender');
 
 // 简单的内存数据库
 const db = {
@@ -420,6 +419,18 @@ const server = http.createServer((req, res) => {
         db.records[dateStr].totalScore = totalScore;
         saveData();
         
+        // 检查是否所有任务都有分数
+        const allTasksScored = tasks.every(t => db.records[dateStr].scores[t.id] !== undefined);
+        
+        // 如果所有任务都有分数，生成并发送毛豆日报
+        if (allTasksScored && !db.records[dateStr].reportSent) {
+          const report = generateMaodouReport(dayType, totalScore, tasks, db.records[dateStr].scores);
+          sendMaodouReportToFeishu(report);
+          db.records[dateStr].reportSent = true;
+          db.records[dateStr].report = report;
+          saveData();
+        }
+        
         // 发送飞书通知
         const task = tasks.find(t => t.id === taskId);
         const option = task.options.find(o => o.score === score);
@@ -437,7 +448,7 @@ const server = http.createServer((req, res) => {
         sendFeishuMessage(message);
         
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ success: true, totalScore }));
+        res.end(JSON.stringify({ success: true, totalScore, reportGenerated: allTasksScored }));
       } catch (err) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: err.message }));
