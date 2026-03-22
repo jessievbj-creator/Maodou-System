@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>毛豆打分</title>
+  <title>毛豆今日学习进度</title>
   <style>
     * {
       margin: 0;
@@ -19,7 +19,7 @@
     }
     
     .container {
-      max-width: 600px;
+      max-width: 700px;
       margin: 0 auto;
     }
     
@@ -76,81 +76,89 @@
     }
     
     .task-item {
-      display: flex;
-      align-items: center;
-      padding: 20px;
+      margin-bottom: 30px;
+      padding-bottom: 30px;
       border-bottom: 2px solid #f0f0f0;
-      cursor: pointer;
-      transition: all 0.3s;
-      border-radius: 15px;
-      margin-bottom: 10px;
     }
     
     .task-item:last-child {
       border-bottom: none;
-    }
-    
-    .task-item:hover {
-      background: #f9f9f9;
-      transform: translateX(5px);
-    }
-    
-    .task-item:active {
-      transform: scale(0.98);
-    }
-    
-    .task-checkbox {
-      width: 50px;
-      height: 50px;
-      border: 4px solid #ddd;
-      border-radius: 12px;
-      margin-right: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.3s;
-      font-size: 28px;
-      flex-shrink: 0;
-      background: white;
-    }
-    
-    .task-item:hover .task-checkbox {
-      border-color: #667eea;
-      background: #f0f4ff;
-    }
-    
-    .task-item.completed .task-checkbox {
-      background: #667eea;
-      border-color: #667eea;
-      color: white;
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-    }
-    
-    .task-info {
-      flex: 1;
+      margin-bottom: 0;
+      padding-bottom: 0;
     }
     
     .task-name {
       font-size: 20px;
-      color: #333;
-      margin-bottom: 6px;
       font-weight: 600;
+      color: #333;
+      margin-bottom: 15px;
     }
     
-    .task-score {
+    .task-options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .option {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: white;
+    }
+    
+    .option:hover {
+      border-color: #667eea;
+      background: #f9f9ff;
+      transform: translateX(5px);
+    }
+    
+    .option.selected {
+      border-color: #667eea;
+      background: #f0f4ff;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    }
+    
+    .option-radio {
+      width: 24px;
+      height: 24px;
+      border: 2px solid #ddd;
+      border-radius: 50%;
+      margin-right: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.3s;
+    }
+    
+    .option.selected .option-radio {
+      border-color: #667eea;
+      background: #667eea;
+    }
+    
+    .option.selected .option-radio::after {
+      content: '✓';
+      color: white;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    
+    .option-label {
+      flex: 1;
       font-size: 16px;
+      color: #333;
+    }
+    
+    .option-score {
+      font-size: 14px;
       color: #667eea;
       font-weight: 600;
-    }
-    
-    .task-item.completed .task-name {
-      color: #999;
-      text-decoration: line-through;
-    }
-    
-    .task-item.completed .task-score {
-      color: #999;
+      margin-left: 10px;
     }
     
     .footer {
@@ -173,10 +181,8 @@
         font-size: 18px;
       }
       
-      .task-checkbox {
-        width: 44px;
-        height: 44px;
-        font-size: 24px;
+      .option-label {
+        font-size: 14px;
       }
     }
   </style>
@@ -205,6 +211,7 @@
   
   <script>
     let todayData = null;
+    let selectedScores = {};
     
     async function loadToday() {
       try {
@@ -217,8 +224,13 @@
         document.getElementById('dateDisplay').textContent = 
           `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${dayNames[date.getDay()]}`;
         
+        // 初始化选中的分数
+        todayData.tasks.forEach(task => {
+          selectedScores[task.id] = task.selectedScore || null;
+        });
+        
         // 更新积分
-        document.getElementById('scoreDisplay').textContent = todayData.totalScore;
+        updateScore();
         
         // 渲染任务列表
         renderTasks();
@@ -233,39 +245,53 @@
       
       todayData.tasks.forEach(task => {
         const taskEl = document.createElement('div');
-        taskEl.className = `task-item ${task.completed ? 'completed' : ''}`;
+        taskEl.className = 'task-item';
+        
+        let optionsHTML = '<div class="task-options">';
+        task.options.forEach((option, idx) => {
+          const isSelected = selectedScores[task.id] === option.score;
+          optionsHTML += `
+            <div class="option ${isSelected ? 'selected' : ''}" onclick="selectOption(${task.id}, ${option.score})">
+              <div class="option-radio"></div>
+              <div class="option-label">${option.label}</div>
+              <div class="option-score">${option.score}分</div>
+            </div>
+          `;
+        });
+        optionsHTML += '</div>';
+        
         taskEl.innerHTML = `
-          <div class="task-checkbox">${task.completed ? '✓' : ''}</div>
-          <div class="task-info">
-            <div class="task-name">${task.name}</div>
-            <div class="task-score">+${task.score}分</div>
-          </div>
+          <div class="task-name">${task.name}</div>
+          ${optionsHTML}
         `;
         
-        taskEl.addEventListener('click', () => toggleTask(task.id, !task.completed));
         tasksList.appendChild(taskEl);
       });
     }
     
-    async function toggleTask(taskId, completed) {
+    function selectOption(taskId, score) {
+      selectedScores[taskId] = score;
+      updateScore();
+      renderTasks();
+      saveScore(taskId, score);
+    }
+    
+    function updateScore() {
+      const totalScore = Object.values(selectedScores).reduce((sum, score) => {
+        return sum + (score !== null ? score : 0);
+      }, 0);
+      document.getElementById('scoreDisplay').textContent = totalScore;
+    }
+    
+    async function saveScore(taskId, score) {
       try {
-        const res = await fetch('/api/task-update', {
+        await fetch('/api/task-update', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ taskId, completed })
+          body: JSON.stringify({ taskId, score })
         });
-        
-        const data = await res.json();
-        
-        // 更新本地数据
-        const task = todayData.tasks.find(t => t.id === taskId);
-        if (task) task.completed = completed;
-        
-        // 更新显示
-        document.getElementById('scoreDisplay').textContent = data.totalScore;
-        renderTasks();
       } catch (err) {
-        console.error('更新失败:', err);
+        console.error('保存失败:', err);
       }
     }
     

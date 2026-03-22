@@ -57,42 +57,276 @@ function sendFeishuMessage(message) {
   req.end();
 }
 
-// 获取任务配置
+// 获取任务配置（带三档选项）
 function getTasksConfig(dayType) {
   const configs = {
     weekday: [
-      { id: 1, name: '吃晚饭不拖延', score: 10 },
-      { id: 2, name: '学校作业视频打卡', score: 20 },
-      { id: 3, name: '讯飞学习机练习', score: 15 },
-      { id: 4, name: '姥姥卷子完成', score: 15 },
-      { id: 5, name: '英语任务', score: 10 },
-      { id: 6, name: '读书/听书15分钟', score: 10 },
-      { id: 7, name: '9:30前上床', score: 10 }
+      { 
+        id: 1, 
+        name: '吃晚饭不拖延',
+        maxScore: 10,
+        options: [
+          { label: '主动按时吃饭，吃得香', score: 10 },
+          { label: '有点拖延，但最后吃完了', score: 6 },
+          { label: '拖延很久、顶嘴或拒绝吃', score: 2 }
+        ]
+      },
+      { 
+        id: 2, 
+        name: '学校作业视频打卡',
+        maxScore: 20,
+        options: [
+          { label: '主动完成，认真看，有反馈', score: 20 },
+          { label: '完成了，但有点被催或不够认真', score: 13 },
+          { label: '拖延、顶嘴或强烈反抗', score: 5 }
+        ]
+      },
+      { 
+        id: 3, 
+        name: '讯飞学习机练习',
+        maxScore: 15,
+        options: [
+          { label: '主动做题，认真思考', score: 15 },
+          { label: '做了，但有点不情愿或需要催', score: 9 },
+          { label: '拖延、躺地上或强烈反抗', score: 3 }
+        ]
+      },
+      { 
+        id: 4, 
+        name: '姥姥卷子完成',
+        maxScore: 15,
+        options: [
+          { label: '主动完成，态度认真', score: 15 },
+          { label: '完成了，但有点拖延或不够专注', score: 9 },
+          { label: '拖延很久、顶嘴或拒绝做', score: 3 }
+        ]
+      },
+      { 
+        id: 5, 
+        name: '英语任务',
+        maxScore: 10,
+        options: [
+          { label: '主动完成，发音清晰', score: 10 },
+          { label: '完成了，但有点不够认真', score: 6 },
+          { label: '拖延或强烈反抗', score: 2 }
+        ]
+      },
+      { 
+        id: 6, 
+        name: '读书/听书15分钟',
+        maxScore: 10,
+        options: [
+          { label: '主动听书/看书，认真听', score: 10 },
+          { label: '听了，但有点心不在焉', score: 6 },
+          { label: '拒绝听或躺地上', score: 2 }
+        ]
+      },
+      { 
+        id: 7, 
+        name: '9:30前上床',
+        maxScore: 10,
+        options: [
+          { label: '主动上床，配合度高', score: 10 },
+          { label: '有点拖延，但最后上床了', score: 6 },
+          { label: '强烈反抗、顶嘴或躺地上', score: 2 }
+        ]
+      }
     ],
     thursday: [
-      { id: 1, name: '吃晚饭不拖延', score: 10 },
-      { id: 2, name: '学校作业视频打卡', score: 20 },
-      { id: 3, name: '学而思数学逻辑思维课', score: 20 },
-      { id: 4, name: '课后作业完成', score: 15 },
-      { id: 5, name: '英语任务', score: 10 },
-      { id: 6, name: '读书/听书15分钟', score: 10 },
-      { id: 7, name: '9:30前上床', score: 10 }
+      { 
+        id: 1, 
+        name: '吃晚饭不拖延',
+        maxScore: 10,
+        options: [
+          { label: '主动按时吃饭，吃得香', score: 10 },
+          { label: '有点拖延，但最后吃完了', score: 6 },
+          { label: '拖延很久、顶嘴或拒绝吃', score: 2 }
+        ]
+      },
+      { 
+        id: 2, 
+        name: '学校作业视频打卡',
+        maxScore: 20,
+        options: [
+          { label: '主动完成，认真看，有反馈', score: 20 },
+          { label: '完成了，但有点被催或不够认真', score: 13 },
+          { label: '拖延、顶嘴或强烈反抗', score: 5 }
+        ]
+      },
+      { 
+        id: 3, 
+        name: '学而思数学逻辑思维课',
+        maxScore: 20,
+        options: [
+          { label: '认真听课，积极参与', score: 20 },
+          { label: '听课了，但有点不够专注', score: 13 },
+          { label: '拖延、顶嘴或强烈反抗', score: 5 }
+        ]
+      },
+      { 
+        id: 4, 
+        name: '课后作业完成',
+        maxScore: 15,
+        options: [
+          { label: '主动完成，认真做', score: 15 },
+          { label: '完成了，但有点拖延', score: 9 },
+          { label: '拖延很久或拒绝做', score: 3 }
+        ]
+      },
+      { 
+        id: 5, 
+        name: '英语任务',
+        maxScore: 10,
+        options: [
+          { label: '主动完成，发音清晰', score: 10 },
+          { label: '完成了，但有点不够认真', score: 6 },
+          { label: '拖延或强烈反抗', score: 2 }
+        ]
+      },
+      { 
+        id: 6, 
+        name: '读书/听书15分钟',
+        maxScore: 10,
+        options: [
+          { label: '主动听书/看书，认真听', score: 10 },
+          { label: '听了，但有点心不在焉', score: 6 },
+          { label: '拒绝听或躺地上', score: 2 }
+        ]
+      },
+      { 
+        id: 7, 
+        name: '9:30前上床',
+        maxScore: 10,
+        options: [
+          { label: '主动上床，配合度高', score: 10 },
+          { label: '有点拖延，但最后上床了', score: 6 },
+          { label: '强烈反抗、顶嘴或躺地上', score: 2 }
+        ]
+      }
     ],
     saturday: [
-      { id: 1, name: '起床后学习30分钟', score: 10 },
-      { id: 2, name: '街舞课前准备不拖延', score: 10 },
-      { id: 3, name: '街舞课认真上', score: 15 },
-      { id: 4, name: '学而思英语课认真上', score: 15 },
-      { id: 5, name: '读书/听书15分钟', score: 10 },
-      { id: 6, name: '9:30前上床', score: 10 }
+      { 
+        id: 1, 
+        name: '起床后学习30分钟',
+        maxScore: 10,
+        options: [
+          { label: '主动学习，认真专注', score: 10 },
+          { label: '学了，但有点拖延或不够认真', score: 6 },
+          { label: '拖延很久或强烈反抗', score: 2 }
+        ]
+      },
+      { 
+        id: 2, 
+        name: '街舞课前准备不拖延',
+        maxScore: 10,
+        options: [
+          { label: '主动准备，配合度高', score: 10 },
+          { label: '准备了，但有点拖延', score: 6 },
+          { label: '拖延很久或顶嘴', score: 2 }
+        ]
+      },
+      { 
+        id: 3, 
+        name: '街舞课认真上',
+        maxScore: 15,
+        options: [
+          { label: '认真听课，积极参与', score: 15 },
+          { label: '上课了，但有点不够认真', score: 9 },
+          { label: '不认真或强烈反抗', score: 3 }
+        ]
+      },
+      { 
+        id: 4, 
+        name: '学而思英语课认真上',
+        maxScore: 15,
+        options: [
+          { label: '认真听课，积极参与', score: 15 },
+          { label: '上课了，但有点不够认真', score: 9 },
+          { label: '不认真或强烈反抗', score: 3 }
+        ]
+      },
+      { 
+        id: 5, 
+        name: '读书/听书15分钟',
+        maxScore: 10,
+        options: [
+          { label: '主动听书/看书，认真听', score: 10 },
+          { label: '听了，但有点心不在焉', score: 6 },
+          { label: '拒绝听或躺地上', score: 2 }
+        ]
+      },
+      { 
+        id: 6, 
+        name: '9:30前上床',
+        maxScore: 10,
+        options: [
+          { label: '主动上床，配合度高', score: 10 },
+          { label: '有点拖延，但最后上床了', score: 6 },
+          { label: '强烈反抗、顶嘴或躺地上', score: 2 }
+        ]
+      }
     ],
     sunday: [
-      { id: 1, name: '早起不拖延', score: 10 },
-      { id: 2, name: '吃完早饭', score: 10 },
-      { id: 3, name: '上午学习1小时完成', score: 30 },
-      { id: 4, name: '下午学习2小时完成', score: 30 },
-      { id: 5, name: '晚饭后玩1小时+洗澡', score: 10 },
-      { id: 6, name: '读书/听书15分钟', score: 10 }
+      { 
+        id: 1, 
+        name: '早起不拖延',
+        maxScore: 10,
+        options: [
+          { label: '主动起床，配合度高', score: 10 },
+          { label: '起床了，但有点拖延', score: 6 },
+          { label: '拖延很久或强烈反抗', score: 2 }
+        ]
+      },
+      { 
+        id: 2, 
+        name: '吃完早饭',
+        maxScore: 10,
+        options: [
+          { label: '主动吃饭，吃得香', score: 10 },
+          { label: '吃了，但有点拖延', score: 6 },
+          { label: '拖延很久或拒绝吃', score: 2 }
+        ]
+      },
+      { 
+        id: 3, 
+        name: '上午学习1小时完成',
+        maxScore: 30,
+        options: [
+          { label: '主动学习，认真专注1小时', score: 30 },
+          { label: '学了，但有点拖延或不够认真', score: 18 },
+          { label: '拖延很久或强烈反抗', score: 6 }
+        ]
+      },
+      { 
+        id: 4, 
+        name: '下午学习2小时完成',
+        maxScore: 30,
+        options: [
+          { label: '主动学习，认真专注2小时', score: 30 },
+          { label: '学了，但有点拖延或不够认真', score: 18 },
+          { label: '拖延很久或强烈反抗', score: 6 }
+        ]
+      },
+      { 
+        id: 5, 
+        name: '晚饭后玩1小时+洗澡',
+        maxScore: 10,
+        options: [
+          { label: '主动玩，按时洗澡，配合度高', score: 10 },
+          { label: '玩了，但洗澡有点拖延', score: 6 },
+          { label: '拖延很久或强烈反抗洗澡', score: 2 }
+        ]
+      },
+      { 
+        id: 6, 
+        name: '读书/听书15分钟',
+        maxScore: 10,
+        options: [
+          { label: '主动听书/看书，认真听', score: 10 },
+          { label: '听了，但有点心不在焉', score: 6 },
+          { label: '拒绝听或躺地上', score: 2 }
+        ]
+      }
     ]
   };
   
@@ -145,15 +379,18 @@ const server = http.createServer((req, res) => {
     const { dateStr, dayType } = getTodayInfo();
     const tasks = getTasksConfig(dayType);
     
-    const record = db.records[dateStr] || { tasks: {}, totalScore: 0 };
+    const record = db.records[dateStr] || { scores: {}, totalScore: 0 };
     
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({
       date: dateStr,
       dayType: dayType,
       tasks: tasks.map(t => ({
-        ...t,
-        completed: record.tasks[t.id] || false
+        id: t.id,
+        name: t.name,
+        maxScore: t.maxScore,
+        options: t.options,
+        selectedScore: record.scores[t.id] || null
       })),
       totalScore: record.totalScore
     }));
@@ -166,18 +403,18 @@ const server = http.createServer((req, res) => {
     req.on('data', chunk => body += chunk);
     req.on('end', () => {
       try {
-        const { taskId, completed } = JSON.parse(body);
+        const { taskId, score } = JSON.parse(body);
         const { dateStr, dayType } = getTodayInfo();
         const tasks = getTasksConfig(dayType);
         
         if (!db.records[dateStr]) {
-          db.records[dateStr] = { tasks: {}, totalScore: 0, dayType };
+          db.records[dateStr] = { scores: {}, totalScore: 0, dayType };
         }
         
-        db.records[dateStr].tasks[taskId] = completed;
+        db.records[dateStr].scores[taskId] = score;
         
         const totalScore = tasks.reduce((sum, t) => {
-          return sum + (db.records[dateStr].tasks[t.id] ? t.score : 0);
+          return sum + (db.records[dateStr].scores[t.id] || 0);
         }, 0);
         
         db.records[dateStr].totalScore = totalScore;
@@ -185,9 +422,9 @@ const server = http.createServer((req, res) => {
         
         // 发送飞书通知
         const task = tasks.find(t => t.id === taskId);
-        const action = completed ? '✅ 完成' : '❌ 取消';
+        const option = task.options.find(o => o.score === score);
         const rewardInfo = getRewardInfo(totalScore);
-        let message = `🎯 毛豆积分更新\n\n${action}：${task.name}\n当前积分：${totalScore}分`;
+        let message = `🎯 毛豆积分更新\n\n${task.name}\n选择：${option.label}\n当前积分：${totalScore}分`;
         
         if (rewardInfo.level === 'none') {
           message += `\n还需 ${rewardInfo.remaining} 分解锁 1 小时游戏`;
