@@ -397,13 +397,13 @@ const server = http.createServer((req, res) => {
     return;
   }
   
-  // API: 更新任务
-  if (pathname === '/api/task-update' && req.method === 'POST') {
+  // API: 提交所有成绩
+  if (pathname === '/api/submit-scores' && req.method === 'POST') {
     let body = '';
     req.on('data', chunk => body += chunk);
     req.on('end', () => {
       try {
-        const { taskId, score } = JSON.parse(body);
+        const { scores } = JSON.parse(body);
         const { dateStr, dayType } = getTodayInfo();
         const tasks = getTasksConfig(dayType);
         
@@ -411,48 +411,31 @@ const server = http.createServer((req, res) => {
           db.records[dateStr] = { scores: {}, totalScore: 0, dayType };
         }
         
-        db.records[dateStr].scores[taskId] = score;
+        // 更新所有分数
+        Object.assign(db.records[dateStr].scores, scores);
         
         const totalScore = tasks.reduce((sum, t) => {
           return sum + (db.records[dateStr].scores[t.id] || 0);
         }, 0);
         
         db.records[dateStr].totalScore = totalScore;
+        
+        // 生成日报
+        const report = generateMaodouReport(dayType, totalScore, tasks, db.records[dateStr].scores);
+        db.records[dateStr].report = report;
+        db.records[dateStr].reportSent = true;
+        
         saveData();
         
-        // 检查是否所有任务都有分数
-        const allTasksScored = tasks.every(t => db.records[dateStr].scores[t.id] !== undefined);
-        
-        // 如果所有任务都有分数，生成并发送毛豆日报
-        if (allTasksScored && !db.records[dateStr].reportSent) {
-          const report = generateMaodouReport(dayType, totalScore, tasks, db.records[dateStr].scores);
-          sendMaodouReportToFeishu(report);
-          db.records[dateStr].reportSent = true;
-          db.records[dateStr].report = report;
-          saveData();
-        }
-        
-        // 发送飞书通知
-        const task = tasks.find(t => t.id === taskId);
-        const option = task.options.find(o => o.score === score);
-        const rewardInfo = getRewardInfo(totalScore);
-        let message = `🎯 毛豆积分更新\n\n${task.name}\n选择：${option.label}\n当前积分：${totalScore}分`;
-        
-        if (rewardInfo.level === 'none') {
-          message += `\n还需 ${rewardInfo.remaining} 分解锁 1 小时游戏`;
-        } else if (rewardInfo.level === '60') {
-          message += `\n还需 ${rewardInfo.remaining} 分解锁 1.5 小时游戏`;
-        } else {
-          message += `\n🎉 已解锁 1.5 小时游戏时间！`;
-        }
-        
-        sendFeishuMessage(message);
+        // 发送飞书日报
+        sendMaodouReportToFeishu(report);
         
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ success: true, totalScore, reportGenerated: allTasksScored }));
+        res.end(JSON.stringify({ success: true, totalScore, report }));
       } catch (err) {
+        console.error('提交失败:', err);
         res.writeHead(500, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: err.message }));
+        res.end(JSON.stringify({ success: false, error: err.message }));
       }
     });
     return;
