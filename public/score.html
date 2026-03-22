@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>毛豆打分</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+    
+    .header h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+    
+    .score-display {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      text-align: center;
+    }
+    
+    .score-number {
+      font-size: 72px;
+      font-weight: bold;
+      color: #667eea;
+      margin-bottom: 10px;
+    }
+    
+    .score-label {
+      font-size: 16px;
+      color: #999;
+    }
+    
+    .tasks-section {
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+    
+    .tasks-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    
+    .task-item {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      transition: background 0.2s;
+      border-radius: 10px;
+      margin-bottom: 8px;
+    }
+    
+    .task-item:last-child {
+      border-bottom: none;
+    }
+    
+    .task-item:hover {
+      background: #f9f9f9;
+    }
+    
+    .task-checkbox {
+      width: 32px;
+      height: 32px;
+      border: 3px solid #ddd;
+      border-radius: 8px;
+      margin-right: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    
+    .task-item.completed .task-checkbox {
+      background: #667eea;
+      border-color: #667eea;
+      color: white;
+    }
+    
+    .task-info {
+      flex: 1;
+    }
+    
+    .task-name {
+      font-size: 16px;
+      color: #333;
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+    
+    .task-score {
+      font-size: 13px;
+      color: #999;
+    }
+    
+    .task-item.completed .task-name {
+      color: #999;
+      text-decoration: line-through;
+    }
+    
+    .footer {
+      text-align: center;
+      color: white;
+      font-size: 12px;
+      margin-top: 30px;
+    }
+    
+    .link {
+      color: white;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🎯 毛豆打分</h1>
+      <p id="dateDisplay"></p>
+    </div>
+    
+    <div class="score-display">
+      <div class="score-number" id="scoreDisplay">0</div>
+      <div class="score-label">今日积分</div>
+    </div>
+    
+    <div class="tasks-section">
+      <div class="tasks-title">📋 今日任务</div>
+      <div id="tasksList"></div>
+    </div>
+    
+    <div class="footer">
+      <p>加油，毛豆！💪</p>
+      <p style="margin-top: 15px;"><span class="link" onclick="window.location.href='/dashboard'">📊 查看数据</span></p>
+    </div>
+  </div>
+  
+  <script>
+    let todayData = null;
+    
+    async function loadToday() {
+      try {
+        const res = await fetch('/api/today');
+        todayData = await res.json();
+        
+        // 更新日期
+        const date = new Date(todayData.date);
+        const dayNames = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+        document.getElementById('dateDisplay').textContent = 
+          `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${dayNames[date.getDay()]}`;
+        
+        // 更新积分
+        document.getElementById('scoreDisplay').textContent = todayData.totalScore;
+        
+        // 渲染任务列表
+        renderTasks();
+      } catch (err) {
+        console.error('加载失败:', err);
+      }
+    }
+    
+    function renderTasks() {
+      const tasksList = document.getElementById('tasksList');
+      tasksList.innerHTML = '';
+      
+      todayData.tasks.forEach(task => {
+        const taskEl = document.createElement('div');
+        taskEl.className = `task-item ${task.completed ? 'completed' : ''}`;
+        taskEl.innerHTML = `
+          <div class="task-checkbox">${task.completed ? '✓' : ''}</div>
+          <div class="task-info">
+            <div class="task-name">${task.name}</div>
+            <div class="task-score">+${task.score}分</div>
+          </div>
+        `;
+        
+        taskEl.addEventListener('click', () => toggleTask(task.id, !task.completed));
+        tasksList.appendChild(taskEl);
+      });
+    }
+    
+    async function toggleTask(taskId, completed) {
+      try {
+        const res = await fetch('/api/task-update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ taskId, completed })
+        });
+        
+        const data = await res.json();
+        
+        // 更新本地数据
+        const task = todayData.tasks.find(t => t.id === taskId);
+        if (task) task.completed = completed;
+        
+        // 更新显示
+        document.getElementById('scoreDisplay').textContent = data.totalScore;
+        renderTasks();
+      } catch (err) {
+        console.error('更新失败:', err);
+      }
+    }
+    
+    // 初始加载
+    loadToday();
+    
+    // 每30秒刷新一次
+    setInterval(loadToday, 30000);
+  </script>
+</body>
+</html>

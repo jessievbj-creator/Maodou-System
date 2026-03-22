@@ -231,7 +231,9 @@ const server = http.createServer((req, res) => {
   }
   
   // 静态文件
-  let filePath = pathname === '/' ? '/index.html' : pathname;
+  let filePath = pathname === '/' ? '/score.html' : pathname;
+  if (pathname === '/score') filePath = '/score.html';
+  if (pathname === '/dashboard') filePath = '/dashboard.html';
   filePath = path.join(__dirname, 'public', filePath);
   
   fs.readFile(filePath, (err, data) => {
