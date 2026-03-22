@@ -13,17 +13,14 @@ const db = {
 
 // 加载数据
 function loadData() {
-  try {
-    const data = fs.readFileSync('./data.json', 'utf8');
-    Object.assign(db, JSON.parse(data));
-  } catch (err) {
-    console.log('首次运行，创建新数据库');
-  }
+  // Vercel 环境不支持写文件，所以只在内存中存储
+  // 如果需要持久化，可以改用数据库
 }
 
 // 保存数据
 function saveData() {
-  fs.writeFileSync('./data.json', JSON.stringify(db, null, 2));
+  // Vercel 环境不支持写文件，数据只存在内存中
+  // 刷新页面后数据会丢失，这是 Vercel 的限制
 }
 
 // 发送飞书消息
