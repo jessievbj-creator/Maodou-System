@@ -234,7 +234,15 @@ const server = http.createServer((req, res) => {
   let filePath = pathname === '/' ? '/score.html' : pathname;
   if (pathname === '/score') filePath = '/score.html';
   if (pathname === '/dashboard') filePath = '/dashboard.html';
+  
+  // 移除查询字符串
+  filePath = filePath.split('?')[0];
   filePath = path.join(__dirname, 'public', filePath);
+  
+  // 如果是目录，尝试加 .html
+  if (!filePath.endsWith('.html') && !filePath.includes('.')) {
+    filePath = filePath + '.html';
+  }
   
   fs.readFile(filePath, (err, data) => {
     if (err) {
